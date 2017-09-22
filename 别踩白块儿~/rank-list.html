@@ -1,0 +1,167 @@
+<!doctype html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title></title>
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<link href="css/mui.min.css" rel="stylesheet" />
+<style type="text/css">
+	td {
+		/* 这玩意设置height 与 margin无效*/
+		padding: 8px;
+	}
+	
+	.crxk-table {
+		text-align: center;
+		margin: 0 auto;
+		border-collapse: collapse;
+	}
+	
+	.first {
+		color: #FF3030;
+		font-size: xx-large;
+		font-family: '华文行楷';
+	}
+	
+	.second {
+		font-family: '华文行楷';
+		color: #8968CD;
+		font-size: x-large;
+	}
+	
+	.thrid {
+		font-family: '华文行楷';
+		color: #2AC845;
+		font-size: larger;
+	}
+	
+	.my-score {
+		color: #BBBBBB;
+	}
+</style>
+</head>
+
+<body>
+<header class="mui-bar mui-bar-nav">
+	<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+	<h1 class="mui-title">手速大神榜</h1>
+</header>
+<nav class="mui-bar mui-bar-tab">
+	<a class="mui-tab-item mui-active" href="#acc">
+		<span class="mui-icon mui-icon-home"></span>
+		<span class="mui-tab-label">总分榜</span>
+	</a>
+	<a class="mui-tab-item" href="#max">
+		<span class="mui-icon mui-icon-info"></span>
+		<span class="mui-tab-label">高分榜</span>
+	</a>
+</nav>
+<div class="mui-content">
+	<d iv id="acc" class="mui-control-content mui-active" style="padding-top: 50px;">
+		<table class="crxk-table">
+			<tr>
+				<th>
+					<h2>昵称</h2></th>
+				<th>
+					<h2>总分</h2></th>
+			</tr>
+			<tr id="acc-1" class="first"></tr>
+			<tr id="acc-2" class="second"></tr>
+			<tr id="acc-3" class="thrid"></tr>
+			<tr id="acc-4"></tr>
+			<tr id="acc-5"></tr>
+			<tr id="acc-6"></tr>
+			<tr id="acc-7"></tr>
+			<tr id="acc-8"></tr>
+			<tr id="acc-9"></tr>
+			<tr id="acc-10"></tr>
+			<tr id='acc-my' class="my-score"></tr>
+		</table>
+	</div>
+	<div id="max" class="mui-control-content" style="padding-top: 50px;">
+		<table class="crxk-table">
+			<tr>
+				<th>
+					<h2>昵称</h2></th>
+				<th>
+					<h2>最高分</h2></th>
+			</tr>
+			<tr id="max-1" class="first"></tr>
+			<tr id="max-2" class="second"></tr>
+			<tr id="max-3" class="thrid"></tr>
+			<tr id="max-4"></tr>
+			<tr id="max-5"></tr>
+			<tr id="max-6"></tr>
+			<tr id="max-7"></tr>
+			<tr id="max-8"></tr>
+			<tr id="max-9"></tr>
+			<tr id="max-10"></tr>
+			<tr id="max-my" class="my-score"></tr>
+		</table>
+	</div>
+</div>
+<script src="js/mui.min.js"></script>
+<script type="text/javascript" src="js/bmob-min.js"></script>
+<script type="text/javascript">
+	$('acc-1').innerHTML = '<td>正在查询</td><td>请稍后……</td>'
+	mui.init()
+	Bmob.initialize("14ceb4f1ebc0821119bcdfed3de2b18e", "23aab713682eb42b23c624bfb023a563");
+	//初始化查询对象
+	var user = new Bmob.Object.extend("_User");
+	var query = new Bmob.Query(user);
+	
+	//得到榜单
+	query.limit(10);
+	query.descending("acc");
+	query.find({
+		success: function(results) {
+			// 循环处理查询到的数据
+			for(var i = 0; i < results.length; i++) {
+				var object = results[i];
+				var temp = i + 1;
+				var acc_id = 'acc-' + temp;
+				var acc_innerHtml = '<td>' + object.get('nick') + '</td>' + '<td>' + object.get('acc') + '</td>';
+				$(acc_id).innerHTML = acc_innerHtml;
+			}
+		},
+		error: function(error) {
+			//alert("查询失败: " + error.code + " " + error.message);
+			mui.alert("查询失败: " + error.code + " " + error.message, '服务器出错', '朕知道了')
+		}
+	});
+	query.descending("max");
+	query.find({
+		success: function(results) {
+			// 循环处理查询到的数据
+			for(var i = 0; i < results.length; i++) {
+				var object = results[i];
+				var temp = i + 1;
+				var max_id = 'max-' + temp;
+				var max_innerHtml = '<td>' + object.get('nick') + '</td>' + '<td>' + object.get('max') + '</td>';
+				$(max_id).innerHTML = max_innerHtml;
+			}
+		},
+		error: function(error) {
+			//alert("查询失败: " + error.code + " " + error.message);
+			mui.alert("查询失败: " + error.code + " " + error.message, '服务器出错', '朕知道了')
+		}
+	});
+	//得到当前用户的分数
+	var currentUser = Bmob.User.current();
+	query.get(currentUser.id, {
+		success: function(res) {
+			var my_nick = '我的分数';
+			var my_acc = res.get('acc');
+			var my_max = res.get('max');
+			$('acc-my').innerHTML = '<td>' + my_nick + '</td>' + '<td>' + my_acc + '</td>';
+			$('max-my').innerHTML = '<td>' + my_nick + '</td>' + '<td>' + my_max + '</td>'
+		}
+	})
+	function $(id) {
+		return document.getElementById(id);
+	}
+</script>
+</body>
+
+</html>

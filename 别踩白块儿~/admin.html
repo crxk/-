@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.min.css" rel="stylesheet" />
+	</head>
+
+	<body>
+
+		<script src="js/mui.min.js"></script>
+		<script type="text/javascript" src="js/bmob-min.js"></script>
+		<script type="text/javascript">
+			var times = 5;
+			var objID;
+			mui.init()
+			Bmob.initialize("14ceb4f1ebc0821119bcdfed3de2b18e", "23aab713682eb42b23c624bfb023a563");
+			var user = new Bmob.Object.extend("_User");
+			var query = new Bmob.Query(user);
+			query.find({
+				success: function(results) {
+					objID = results[0].id;
+					// 循环处理查询到的数据
+					//					for(var i = 0; i < results.length; i++) {
+					//						var object = results[i];
+					//						console.log("代码调试 " + object.id);
+					//						query.get(object.id, {
+					//							success: function(obj) {
+					//								obj.set('times', times);
+					//								obj.save();
+					//								console.log("第二次查询 "+obj.id);
+					//							}
+					//						});
+					//					}
+				},
+				error: function(error) {
+					//alert("查询失败: " + error.code + " " + error.message);
+					mui.alert("查询失败: " + error.code + " " + error.message, '服务器出错', '朕知道了')
+				}
+			});
+			//不是你的代码没写对 ，而是Bmob的安全策略 ，其他用户不能修修改User表的内容。
+			query.get(objID, {
+				success: function(user) {
+					user.set('nick', "lala");
+					user.save();
+					console.log("第二次查询 " + user.id);
+				},
+				error: function(object, error) {
+
+				}
+			})
+		</script>
+	</body>
+
+</html>

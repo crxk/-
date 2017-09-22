@@ -1,0 +1,84 @@
+{
+	"index.html": {
+		"resources": [
+			"js/mui.min.js",
+			"fonts/mui.ttf",
+			"css/mui.min.css",
+			"js/bmob-min.js"
+		],
+		"refer": [
+			"registe.html",
+			"block.html",
+			"rank-list.html",
+			"about.html",
+			"forget-psw.html",
+			"Test/open.html",
+			"limit_block.html"
+		]
+	},
+	"block.html": {
+		"refer": [
+			"score.html"
+		],
+		"resources": [
+			"js/mui.min.js",
+			"css/mui.min.css"
+		]
+	},
+	"score.html": {
+		"refer": [
+			"block.html",
+			"rank-list.html",
+			"more-times.html"
+		],
+		"resources": [
+			"js/mui.min.js",
+			"fonts/mui.ttf",
+			"css/mui.min.css",
+			"js/bmob-min.js"
+		]
+	},
+	"rank-list.html": {
+		"resources": [
+			"js/mui.min.js",
+			"fonts/mui.ttf",
+			"css/mui.min.css",
+			"js/bmob-min.js"
+		],
+		"refer": []
+	},
+	"about.html": {
+		"resources": [
+			"js/mui.min.js",
+			"fonts/mui.ttf",
+			"css/mui.min.css"
+		]
+	},
+	"limit_block.html": {
+		"resources": [
+			"audio/end.mp3",
+			"images/black-block.png",
+			"js/createjs.js",
+			"images/2000.png",
+			"images/white-block.png",
+			"audio/tap.mp3",
+			"js/mui.min.js"
+		],
+		"refer": [
+			"limit_score.html"
+		]
+	},
+	"limit_score.html": {
+		"refer": [
+			"limit_block.html",
+			"more-times.html",
+			"rank-list.html"
+		],
+		"resources": [
+			"js/mui.min.js",
+			"fonts/mui.ttf",
+			"css/mui.min.css",
+			"js/bmob-min.js"
+		]
+	}
+}

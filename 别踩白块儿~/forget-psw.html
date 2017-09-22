@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.min.css" rel="stylesheet" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">重设密码</h1>
+		</header>
+		<div class="mui-content">
+			<div class="mui-content" style="padding: 10px;">
+				<div class="crxk-reset-psw" style="margin-top: 40px;">
+					<h5>注册时输入的邮箱：</h5>
+					<div class="mui-input-row ">
+						<input type="text" class="mui-input-clear" id="mail">
+						<button type="button" class="mui-btn mui-btn-primary" id="reset">重设</button>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+		<script src="js/mui.min.js"></script>
+		<script type="text/javascript" src="js/bmob-min.js"></script>
+		<script type="text/javascript">
+			mui.init()
+			Bmob.initialize("14ceb4f1ebc0821119bcdfed3de2b18e", "23aab713682eb42b23c624bfb023a563");
+			document.getElementById('reset').addEventListener('tap', function() {
+				var mail = document.getElementById('mail').value;
+				Bmob.User.requestPasswordReset(mail, {
+					success: function() {
+						// Password reset request was sent successfully
+						mui.alert('邮件已经发送到邮箱，点击链接进行重置', '重设密码', '好的!', function() {
+							mui.back();
+						});
+					},
+					error: function(error) {
+						// Show the error message somewhere
+						alert("Error: " + error.code + " " + error.message);
+					}
+				});
+			})
+		</script>
+	</body>
+
+</html>

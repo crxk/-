@@ -1,0 +1,326 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN">
+
+<head>
+<title>别踩白块</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+<link rel="stylesheet" href="css/mui.min.css" />
+<!--
+1.创建DIV容器；例如：400*400
+2.创建4行DIV
+3.4行DIV中，再放4列DIV，float left
+4.写一个方法，创建4列子DIV，创建一行DIV，把一行四列，插入到容器中
+5.定时器，没30毫秒增加TOP值
+6.没往下滑100px时，再创建一行四列，插入在窗口的最前面。
+-->
+<style>
+	#main {
+		width: 276px;
+		/*原始276*/
+		height: 448px;
+		/*原始448*/
+		border: 2px solid green;
+		margin: 0 auto;
+		position: relative;
+		overflow: hidden;
+		background-color: #FFFFF0;
+	}
+	
+	#container {
+		width: 100%;
+		height: 100%;
+		position: relative;
+		top: -112px;
+		background: #FFFFF0
+	}
+	
+	.btn {
+		margin-top: 20px;
+		text-align: center;
+	}
+	
+	.row {
+		width: 100%;
+		height: 25%;
+	}
+	
+	.rowFail {
+		width: 100%;
+		height: 25%;
+		background: red;
+	}
+	
+	.cell {
+		/*增加边框 显示出一个个格子的效果*/
+		border: 1px solid gainsboro;
+		width: 25%;
+		height: 100%;
+		float: left;
+	}
+	
+	.black {
+		/*border: 1px solid gainsboro;*/
+		width: 25%;
+		height: 100%;
+		float: left;
+		background: black;
+	}
+	
+	.fail {
+		width: 25%;
+		height: 100%;
+		float: left;
+		background: red;
+	}
+	
+	#score {
+		text-align: center;
+	}
+</style>
+</head>
+
+<body>
+<div class="mui-content" style="padding: 20px;">
+	<h1 id="score">0</h1>
+	<div id="main">
+		<div id="container" ></div>
+	</div>
+	<div class="btn mui-button-row">
+		<button id="begin" class="mui-btn mui-btn-primary">开始</button>
+		<button id="onceMore" onclick="onceMore()" class="mui-btn mui-btn-danger">重置</button>
+	</div>
+</div>
+</body>
+<script type="text/javascript" src="js/mui.min.js"></script>
+<script>
+var clock = null; // 定时器操作句柄  
+var state = 0; // 0初始化,1进行中, 2 暂停, 3失败  
+var speed = 2;
+var newscore = 0;
+mui.init({
+	swipeBack: false, //启用右滑关闭功能
+});
+/* 
+开始
+*/
+$('begin').addEventListener('tap', function() {
+	init();
+	start();
+})
+/*
+ *再来一次
+ */
+function onceMore() {
+	location.reload();
+}
+
+/*  
+ * 初始化  
+ */
+function init() {
+	for(var i = 0; i < 4; i++) {
+		crow();
+	}
+	//对点击事件进行监听判断
+	/*
+	$('container').onclick = function(ev) {
+		event.stopPropagation();
+		judge(ev);
+	}
+	*/
+	mui('#container').on('tap', '.cell', function() {
+		if(state == 3) {
+			mui.alert(' ', 'GameOver', '确定');
+			return;
+		}
+		var class_name = this.getAttribute('class');
+		//console.log("获取点击的类名 " + class_name);
+		if(class_name.indexOf('black') == -1) {
+			this.className = 'fail'
+			fail('点到了白块~');
+		} else {
+			this.className = 'cell';
+			var i = Math.floor(Math.random() * 4);
+			if(i % 2 == 0) {
+				if(this.nextSibling != null&&this.nextSibling.nextSibling != null) {
+					console.log(this.nextSibling)
+					this.nextSibling.className = 'black cell';
+				}
+			} else {
+				//console.log(this.prevSibling),元素的上一个元素总是为空，（我也不知为啥），所以左边不会出现黑块
+				if(this.prevSibling != null) {
+					this.prevSibling.className = 'black cell';
+				}
+			}
+			score();
+		}
+	})
+}
+
+/*  
+ * start() 启动  
+ */
+function start() {
+	clock = window.setInterval('move()', 30);
+}
+
+/*  
+ * 动画  
+ */
+function move() {
+	var con = $('container');
+	var tag = "哦，这个黑块你没有点到"
+	var last_row_tag = 1;
+	//得到给container设定的top值
+	var top = parseInt(window.getComputedStyle(con, null)['top']);
+
+	if(speed + top > 0) { //一步会走过头,直接top=0  
+		top = 0;
+	} else {
+		top += speed; //调节每次下降的像素  
+	}
+
+	con.style.top = top + 'px';
+
+	//   
+
+	if(top == 0) {
+		crow();
+		con.style.top = '-112px';
+		drow();
+	} else if(top == (-112 + speed)) {
+		//console.log(con.lastChild);  
+		var rows = con.childNodes; //获取container的子元素 就是那一行 一行的
+		var last_row = rows[rows.length - 1]; //获取最后一行
+		var last_row_blocks = last_row.childNodes; //获取最后一行的那些小方块
+		for(var i = 0; i < 4; i++) {
+
+			if(last_row_blocks[i].className.indexOf('black') != -1) last_row_tag = 0
+		}
+		if((rows.length == 5) && (last_row_tag == 0)) { //从这判断 它的孩子中有么有黑块 如果有 就不行了
+			rows[rows.length - 1].className = 'rowFail';
+			fail(tag);
+		}
+	}
+}
+
+/*  
+ * 加速函数  
+ */
+function jiasu(score) {
+	speed += 1;
+}
+
+/*  
+ * 输,结束  
+ */
+function fail(tag) {
+	var score = newscore;
+	clearInterval(clock);
+	state = 3;
+	mui.alert(tag, 'GameOver', '确定', function() {
+		mui.openWindow({
+			url: 'score.html',
+			id: 'score',
+			waiting: {
+				autoShow: false //自动显示等待框，默认为true
+			},
+			createNew:true,//创建新的窗口 重新加载一遍，如果不这样还会打开之前的
+		});
+	})
+	localStorage.setItem('new_score', score); //利用h5本地存储 ，储存分数
+	/*mui.openWindow({
+		url: 'score.html',
+		id: 'score',
+		waiting: {
+			autoShow: false //自动显示等待框，默认为true
+		},
+	});*/
+}
+
+/*  
+ * 计分  
+ */
+function score() {
+	newscore = parseInt($('score').innerHTML) + 1;
+	$('score').innerHTML = newscore;
+	if(newscore % 15 == 0) {
+		jiasu(score);
+	}
+}
+
+/*  
+ * 创建div.row  
+ */
+function crow() {
+	var con = $('container'); //获取一个div 
+	var row = cdiv('row'); //创建一个div，其类名为row
+	var classes = createSn(); //classes 是一个数组 随机产生黑块用的
+
+	for(var i = 0; i < 4; i++) {
+		//div可以有孩子，HTMLDOM的概念，每一个页面元素，可以看出一个对象 
+		//一行，然后一行包括 四个方块。
+		//随机产生一个黑块，一个元素可以有两个类名，
+		// 拥有cell black这两个类名的元素会变成黑色
+		row.appendChild(cdiv(classes[i]));
+	}
+	/*
+	 *  如果容器没有孩子，就直接添加
+	 *  如果容器有孩子，就添加在孩子之前
+	 *  也就是说，
+	 *  这是一层一层的压在上面
+	 */
+	if(con.firstChild == null) {
+		con.appendChild(row);
+	} else {
+		con.insertBefore(row, con.firstChild);
+	}
+}
+
+/*  
+ * 删除最后一行  
+ */
+function drow() {
+	var con = $('container');
+	if(con.childNodes.length == 6) {
+		con.removeChild(con.lastChild);
+	}
+}
+
+/**  
+ * 创建div,className是其类名  
+ */
+function cdiv(className) {
+	var div = document.createElement('div');
+	div.className = className;
+	return div;
+}
+
+/**  
+ * 返回1个数组,随机其中1个单元,值为'cell black',其他3个,皆为cell  
+ **/
+function createSn() {
+	var arr = ['cell', 'cell', 'cell', 'cell'];
+	var i = Math.floor(Math.random() * 4); //Math.random()返回0~1之间的随机数； Math.floor()向下取整 
+	arr[i] = 'cell black';
+	var d = Math.floor(Math.random() * 4); //Math.random()返回0~1之间的随机数； Math.floor()向下取整 
+	arr[d] = 'cell black';
+	return arr;
+}
+
+/*  
+ * 按id获取对象  
+ * $在JS中本身只是一个符号而异，在JS里什么也不是。
+ * 但在JS应用库JQUERY的作者将之做为一个自定义函数名了，
+ * !!这个函数是获取指定网页元素的函数，使用非常之频繁，!!
+ * 所以好多新手不知道，还以为$是JS的什么特殊语法。
+ * 后来，可能有些程序员JQUERY用得多了，发现$这个函数很好用，
+ * 很方便，所以，在不用JQUERY的情况，一般自己也会自定义一个$函数。
+ */
+function $(id) {
+	return document.getElementById(id);
+}
+</script>
+
+</html>

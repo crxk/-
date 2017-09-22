@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="height=device-height,width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<style type="text/css">
+			.crxk-main {
+				padding: 15px;
+			}
+			
+			.crxk-login {
+				margin-top: 30px;
+			}
+			
+			.crxk-rank-list {
+				margin-top: 30px;
+			}
+			
+			.crxk-foot {
+				margin-top: 50px;
+				font-family: 华文行楷;
+				float: right;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<h1 class="mui-title">别踩白块~</h1>
+		</header>
+		<div class="mui-content crxk-main">
+			<p id="crxk-cloud"></p>
+			<div class="crxk-login">
+				<h5>学号：</h5>
+				<div class="mui-input-row ">
+					<input type="text" class="mui-input-clear" id="stu_num">
+				</div>
+				<h5>密码：</h5>
+				<div class="mui-input-row mui-password">
+					<input type="password" class="mui-input-password" id="psw">
+				</div>
+			</div>
+			<div class="mui-button-row">
+				<button type="button" data-loading-text="登录中" class="mui-btn mui-btn-success" id="login">登录</button>&nbsp;&nbsp;
+				<button type="button" class="mui-btn mui-btn-royal" id="reg">注册</button>
+			</div>
+			<div class="crxk-rank-list">
+				<button type="button" class="mui-btn mui-btn-block mui-btn-primary" id="forget_psw">忘记密码</button>
+				<button type="button" class="mui-btn mui-btn-block mui-btn-primary" id="rank">手速大神榜</button>
+			</div>
+			<div class="crxk-foot">
+				<h4>主办单位：计算机协会</h4>
+				<h4>赞助商家：xxxx</h4>
+				<h4>技术支持：灿若星空丶</h4>
+				<a id="about"><h4>关于内测</h4></a>
+			</div>
+		</div>
+		<div id="sheet1" class="mui-popover mui-popover-bottom mui-popover-action ">
+		    <!-- 可选择菜单 -->
+		    <ul class="mui-table-view">
+		      <li class="mui-table-view-cell">
+		        <a href="#" id="black_white">经典黑白块</a>
+		      </li>
+		      <li class="mui-table-view-cell">
+		        <a href="#" id="limit_game">限时挑战赛</a>
+		      </li>
+		    </ul>
+		    <!-- 取消菜单 -->
+		    <ul class="mui-table-view">
+		      <li class="mui-table-view-cell">
+		        <a href="#sheet1"><b>选择游戏类型</b></a>
+		      </li>
+		    </ul>
+		</div>
+		<script type="text/javascript" src="js/mui.min.js"></script>
+		<script type="text/javascript" src="js/bmob-min.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			var auto_stu_num = localStorage.getItem('stu_num'); 
+			var auto_psw = localStorage.getItem('psw');
+			$('stu_num').value = auto_stu_num;
+			$('psw').value = auto_psw;
+			mui.init();
+			Bmob.initialize("14ceb4f1ebc0821119bcdfed3de2b18e", "23aab713682eb42b23c624bfb023a563");
+
+			function $(id) {
+				return document.getElementById(id);
+			}
+			$('login').addEventListener('tap', function() {
+				mui('#login').button('loading');
+				var stu_num = $('stu_num').value;
+				var psw = $('psw').value;
+				//存储学号 密码 自动输入所用
+				localStorage.setItem('stu_num',stu_num);
+				localStorage.setItem('psw',psw);
+				Bmob.User.logIn(stu_num, psw, {
+					success: function(user) {
+						mui.toast('登录成功');
+						mui('#login').button('reset');
+						// 跳转游戏页面
+						mui('#sheet1').popover('toggle');
+						
+/*						mui.openWindow({
+							url: 'block.html',
+							id: 'index-to-block',
+							waiting: {
+								autoShow: false //自动显示等待框，默认为true
+							},
+						});*/
+					},
+					error: function(user, error) {
+						console.log("登录失败： " + error);
+						mui('#login').button('reset');
+						mui.alert('密码错误，请稍后再试')
+						// The login failed. Check error to see why.
+					}
+				});
+			});
+			
+			//推送相关
+			var cloud =  Bmob.Object.extend("cloud");
+			var query = new Bmob.Query(cloud);
+			query.first({
+				success: function(results) {
+					var is_psot = results.get('isPost');
+					var content = results.get('content');
+					if(is_psot==1){
+						$('crxk-cloud').innerHTML=content;
+					}
+				},
+				error: function(error) {
+					//alert("查询失败: " + error.code + " " + error.message);
+					mui.alert("查询失败: " + error.code + " " + error.message,'服务器出错','朕知道了')
+				}
+			});
+			//打开各种界面
+			$('reg').addEventListener('tap', function() {
+				//打开注册页面
+				mui.openWindow({
+					url: 'registe.html',
+					id: 'registe',
+					waiting: {
+						autoShow: false //自动显示等待框，默认为true
+					},
+				});
+			});
+			$('forget_psw').addEventListener('tap', function() {
+				//忘记密码页面
+				mui.openWindow({
+					url: 'forget-psw.html',
+					id: 'forget-psw',
+					waiting: {
+						autoShow: false //自动显示等待框，默认为true
+					},
+				});
+			})
+			$('rank').addEventListener('tap', function() {
+				//显示榜单
+				mui.openWindow({
+					url: 'rank-list.html',
+					id: 'index-rank-list',
+					waiting: {
+						autoShow: false //自动显示等待框，默认为true
+					},
+				});
+			})
+			$('about').addEventListener('tap', function() {
+				//显示关于
+				mui.openWindow({
+					url: 'Test/open.html',//about.html
+					id: 'about',
+					waiting: {
+						autoShow: false //自动显示等待框，默认为true
+					},
+				});
+			})
+			$('black_white').addEventListener('tap', function() {
+				//打开经典白块
+				mui.openWindow({
+					url: 'block.html',
+					id: 'block',
+					waiting: {
+						autoShow: false //自动显示等待框，默认为true
+					},
+				});
+			})
+			$('limit_game').addEventListener('tap', function() {
+				//打开显示挑战
+				mui.openWindow({
+					url: 'limit_block.html',
+					id: 'limit-block',
+					waiting: {
+						autoShow: false //自动显示等待框，默认为true
+					},
+				});
+			})
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<style type="text/css">
+			.crxk-main {
+				padding: 15px;
+			}
+			
+			.crxk-login {
+				margin-top: 30px;
+				margin-bottom: 40px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">注册</h1>
+		</header>
+		<div class="mui-content crxk-main">
+			<div class="crxk-login">
+				<h5>学号：</h5>
+				<div class="mui-input-row ">
+					<input type="text" class="mui-input-clear" id="stu_num" placeholder="推荐使用学号，其他数字也可以~">
+				</div>
+				<h5>昵称：</h5>
+				<div class="mui-input-row ">
+					<input type="text" class="mui-input-clear" id="nick" placeholder="6个字符以内哦~">
+				</div>
+				<h5>邮箱：</h5>
+				<div class="mui-input-row ">
+					<input type="text" class="mui-input-clear" id="mail" placeholder="必填用于找回密码~">
+				</div>
+				<h5>密码：</h5>
+				<div class="mui-input-row mui-password" >
+					<input type="password" class="mui-input-password" id="psw">
+				</div>
+				<h5>确认密码：</h5>
+				<div class="mui-input-row mui-password" >
+					<input type="password" class="mui-input-password" id="re_psw">
+				</div>
+			</div>
+			<button type="button"  data-loading-text="注册中" class="mui-btn mui-btn-block mui-btn-primary" id="reg">注册</button>
+		</div>
+		<script type="text/javascript" src="js/mui.min.js"></script>
+		<script type="text/javascript" src="js/bmob-min.js"></script>
+		<script type="text/javascript">
+			mui.init()
+			Bmob.initialize("14ceb4f1ebc0821119bcdfed3de2b18e", "23aab713682eb42b23c624bfb023a563");
+			function $(id) {
+				return document.getElementById(id);
+			}
+			//反思：一定要注意程序的执行顺序，写在这里，页面加载的时候就执行这些代码了，获取的内容当然为空
+			/*
+			var stu_num = $('stu_num').value;
+			var psw = $('psw').value;
+			var re_psw = $('re_psw').value;
+			var nick = $('nick').value;
+			var mail = $('mail').value;
+			*/
+			console.log("代码调试 "+stu_num+psw+re_psw+nick+mail);
+			$('reg').addEventListener('tap', function() {
+				mui('#reg').button('loading');
+				var stu_num = $('stu_num').value;
+				var psw = $('psw').value;
+				var re_psw = $('re_psw').value;
+				var nick = $('nick').value;
+				var mail = $('mail').value;
+				if(psw==re_psw) {
+					var user = new Bmob.User();
+					user.set("username", stu_num);
+					user.set("password", psw);
+					user.set("count", psw);
+					user.set("email", mail);
+					user.set("nick",nick);
+					//如果不给这些变量赋值，在score页面直接取出，就会有undefined了
+					user.set("acc",0);
+					user.set("max",0);
+					user.set('limit_acc', 0);
+					user.set('limit_max', 0);
+					user.set("times",10);
+					user.signUp(null, {
+						success: function(user) {
+							mui('#reg').button('reset');
+							mui.alert('开始你的游戏之旅吧','注册成功','好的!',function(){
+								mui.back();
+							});
+						},
+						error: function(user, error) {
+							// Show the error message somewhere and let the user try again.
+							alert("Error: " + error.code + " " + error.message);
+							mui('#reg').button('reset');
+						}
+					});
+
+				} else {
+					mui.toast('两次密码不一致');
+				}
+			})
+		</script>
+	</body>
+
+</html>

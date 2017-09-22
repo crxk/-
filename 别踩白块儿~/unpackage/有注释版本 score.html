@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title></title>
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<link href="css/mui.min.css" rel="stylesheet" />
+<style type="text/css">
+	.crxk-show-result{
+		margin-top: 70px;
+		margin-bottom: 50px;
+	}
+</style>
+</head>
+
+<body>
+	<header class="mui-bar mui-bar-nav">
+	    <a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+	    <h1 class="mui-title">得分</h1>
+	</header>
+<div class="mui-content" style="padding: 15px;">
+	<div class="crxk-show-result">
+		<h2 id="new-score">此次分数：</h2>
+		<h3 id="max-score">历史最高：正在加载……</h3>
+		<h4 id="acc-score">历史总分：正在加载……</h4>
+		<h5 id="left-times">剩余机会：正在加载……</h5>
+	</div>
+	<div class="crxk-btns">
+		<button class="mui-btn mui-btn-block mui-btn-danger" style="width: 100px;" onclick="more_times()"> 续命</button>
+		<button class="mui-btn mui-btn-block mui-btn-success" style="width: 200px;" onclick="rank_list()"> 排行榜</button>
+		<button class="mui-btn mui-btn-block mui-btn-primary" style="width: 300px;" onclick="noce_more()"> 再来一次</button>
+	</div>
+</div>
+<script src="js/mui.min.js"></script>
+<script type="text/javascript" src="js/bmob-min.js"></script>
+<script type="text/javascript">
+	var acc;
+	var max;
+	var times;
+	var net_tag = 0;//网络加载标记 0未完成 1完成
+	mui.init();
+	//获取游戏页面传来的分数
+	var new_score = localStorage.getItem('new_score');
+	
+	Bmob.initialize("14ceb4f1ebc0821119bcdfed3de2b18e", "23aab713682eb42b23c624bfb023a563");
+	//获取当前用户
+	var currentUser = Bmob.User.current();
+	//获取当前用户的ID 直接加.id就可以了
+	var objectID = currentUser.id;
+	//先从数据库查询出相关数据
+	var user = new Bmob.Object.extend("_User");
+	var query = new Bmob.Query(user);
+	//实现times 每小时自动更新的逻辑
+	var myDate = new Date();
+	//var today = myDate.getDate();
+	var today = myDate.getMinutes();
+	//从本地取出上次使用的时间，但是有bug，用户可以换手机然后就又有了机会。
+	//var last_time = localStorage.getItem('last_time')
+	//从数据库取出用户上次更新的时间，然后计算与当前的时间差。
+	var last_time = currentUser.updatedAt
+	var str = last_time.toString();
+	str = str.replace("/-/g", "/");
+	var last_date = new Date(str).getMinutes();
+	console.log("代码调试 数据库时间"+last_date);
+	console.log("代码调试  当前系统时间"+today);
+//	if(today!=last_time){
+//		query.get(objectID, {
+//				success: function(user) {
+//					user.set('times', 11);
+//					user.save();//这个是个耗时的网络操作，有能这边还没存进去 下边的查询函数又查出来之前的了 
+//					mui.toast('亲，你已获得10次机会呦~');
+//				}
+//			});
+//			//localStorage.setItem('last_time',today)
+//	}
+	//查询历史记录
+	query.get(objectID, {
+		success: function(user) {
+			net_tag=1;
+			acc = user.get("acc");
+			max = user.get("max");
+			if(today!=last_date){//最佳解决方法，如果上一次登录不算是今天 那么直接给出times值 不从服务器取出，然后再存到服务器。
+				times=5;
+				//localStorage.setItem('last_time',today);
+				mui.toast('亲，你已获得5次机会呦~');
+			}else{
+				times = user.get("times") - 1;
+			}
+			//console.log("query "+typeof(acc)+max+typeof(times));
+			acc = acc + parseInt(new_score);
+			$('max-score').innerHTML = '历史最高：' + max;
+			$('acc-score').innerHTML = '累积总分：' + acc;
+			$('left-times').innerHTML = '剩余机会：' + times;
+		},
+	});
+	$('new-score').innerHTML = '此次分数：' + new_score;
+	//此处设置延迟 等待网络查询 然后更新数据
+	mui.later(function() {
+		if (net_tag==0){
+			mui.alert('亲，点击按钮重新获取排名哟~','网络阻塞','ok',function(){
+				location.reload();//如果网络加载未完成 重新加载
+				return;
+			})
+		} 
+		if(parseInt(new_score) > max) max = parseInt(new_score);
+		if(times < 0) {
+			mui.alert('机会已经用完,分数停止积累啦', '等会再来吧', '好的~');
+		} else {
+			query.get(objectID, {
+				success: function(user) {
+					user.set('acc', acc);
+					user.set('max', max);
+					user.set('times', times);
+//					if(today!=last_time){
+//						//从这里再判断保存一次 .save（） 是网络操作，有延迟。
+//						user.set('times',10);
+//						localStorage.setItem('last_time',today);
+//					}else{
+//						user.set('times', times);
+//					}
+					
+					user.save();
+					mui.toast('分数已同步至云端~');
+				}
+			});
+		}
+	}, 2500)
+
+	function $(id) {
+		return document.getElementById(id);
+	}
+	function noce_more(){
+		mui.openWindow({
+			url: 'block.html',
+			id: 'block-2',
+			waiting: {
+				autoShow: false //自动显示等待框，默认为true
+			},
+		});
+	}
+	function rank_list(){
+		mui.openWindow({
+			url: 'rank-list.html',
+			id: 'score-rank-list',
+			waiting: {
+				autoShow: false //自动显示等待框，默认为true
+			},
+		});
+	}
+	function more_times(){
+		mui.openWindow({
+			url: 'more-times.html',
+			id: 'more-times',
+			waiting: {
+				autoShow: false //自动显示等待框，默认为true
+			},
+		});
+	}
+	//console.log("当前 "+objectID);
+</script>
+</body>
+
+</html>
